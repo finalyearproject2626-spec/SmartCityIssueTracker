@@ -1,7 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import PrivateRoute from './components/PrivateRoute'
 import AdminPrivateRoute from './components/AdminPrivateRoute'
+import Navbar from './components/Navbar'
+import Footer from './components/Footer'
 
 // User Pages
 import SplashScreen from './pages/user/SplashScreen'
@@ -26,7 +28,10 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <Routes>
+        <div className="min-h-screen flex flex-col bg-gradient-soft">
+          <Navbar />
+          <main className="flex-1">
+            <Routes>
           {/* User Routes */}
           <Route path="/" element={<SplashScreen />} />
           <Route path="/language" element={<LanguageSelection />} />
@@ -45,7 +50,10 @@ function App() {
           <Route path="/admin/dashboard" element={<AdminPrivateRoute><AdminDashboard /></AdminPrivateRoute>} />
           <Route path="/admin/complaints" element={<AdminPrivateRoute><AdminComplaints /></AdminPrivateRoute>} />
           <Route path="/admin/complaints/:id" element={<AdminPrivateRoute><AdminComplaintDetails /></AdminPrivateRoute>} />
-        </Routes>
+            </Routes>
+          </main>
+          <Footer />
+        </div>
       </Router>
     </AuthProvider>
   )

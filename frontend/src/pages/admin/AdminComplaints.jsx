@@ -36,6 +36,8 @@ const AdminComplaints = () => {
         return 'bg-vibrant-green text-cream'
       case 'In Progress':
         return 'bg-orange-400 text-cream'
+      case 'Rejected':
+        return 'bg-red-500 text-cream'
       default:
         return 'bg-yellow-400 text-cream'
     }
@@ -76,6 +78,7 @@ const AdminComplaints = () => {
               <option value="">All Status</option>
               <option value="Pending">Pending</option>
               <option value="In Progress">In Progress</option>
+              <option value="Rejected">Rejected</option>
               <option value="Resolved">Resolved</option>
             </select>
             <select

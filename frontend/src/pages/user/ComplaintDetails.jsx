@@ -32,6 +32,8 @@ const ComplaintDetails = () => {
         return 'bg-green-100 text-green-800'
       case 'In Progress':
         return 'bg-orange-100 text-orange-800'
+      case 'Rejected':
+        return 'bg-red-100 text-red-800'
       default:
         return 'bg-yellow-100 text-yellow-800'
     }
@@ -43,6 +45,8 @@ const ComplaintDetails = () => {
         return <FiCheckCircle className="text-green-600" size={24} />
       case 'In Progress':
         return <FiLoader className="text-orange-600" size={24} />
+      case 'Rejected':
+        return <FiClock className="text-red-600" size={24} />
       default:
         return <FiClock className="text-yellow-600" size={24} />
     }
@@ -134,6 +138,7 @@ const ComplaintDetails = () => {
               <span className={`inline-block px-4 py-2 rounded-full text-sm font-bold ${
                 complaint.status === 'Resolved' ? 'bg-vibrant-green text-cream' :
                 complaint.status === 'In Progress' ? 'bg-orange-400 text-cream' :
+                complaint.status === 'Rejected' ? 'bg-red-500 text-cream' :
                 'bg-yellow-400 text-cream'
               }`}>
                 {complaint.status}

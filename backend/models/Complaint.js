@@ -35,7 +35,7 @@ const complaintSchema = new mongoose.Schema({
   videos: [String],
   status: {
     type: String,
-    enum: ['Pending', 'In Progress', 'Resolved'],
+    enum: ['Pending', 'In Progress', 'Rejected', 'Resolved'],
     default: 'Pending'
   },
   officerRemarks: String,

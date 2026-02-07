@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../utils/api'
-import { FiLogOut, FiList, FiCheckCircle, FiClock, FiLoader } from 'react-icons/fi'
+import { FiLogOut, FiList, FiCheckCircle, FiClock, FiLoader, FiXCircle } from 'react-icons/fi'
 
 const AdminDashboard = () => {
   const navigate = useNavigate()
@@ -11,6 +11,7 @@ const AdminDashboard = () => {
     total: 0,
     pending: 0,
     inProgress: 0,
+    rejected: 0,
     resolved: 0
   })
   const [loading, setLoading] = useState(true)
@@ -81,6 +82,15 @@ const AdminDashboard = () => {
                 </div>
               </div>
               <p className="text-3xl font-bold text-orange-600">{stats.inProgress}</p>
+            </div>
+            <div className="bg-cream p-5 rounded-2xl shadow-soft border border-pale-green transform hover:scale-105 transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-deep-teal text-sm font-semibold">Rejected</p>
+                <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
+                  <FiXCircle className="text-cream" size={20} />
+                </div>
+              </div>
+              <p className="text-3xl font-bold text-red-600">{stats.rejected ?? 0}</p>
             </div>
             <div className="bg-cream p-5 rounded-2xl shadow-soft border border-pale-green transform hover:scale-105 transition-all">
               <div className="flex items-center justify-between mb-2">

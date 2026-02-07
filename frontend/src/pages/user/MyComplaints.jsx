@@ -31,6 +31,8 @@ const MyComplaints = () => {
         return <FiCheckCircle className="text-vibrant-green" size={24} />
       case 'In Progress':
         return <FiLoader className="text-orange-500" size={24} />
+      case 'Rejected':
+        return <FiClock className="text-red-500" size={24} />
       default:
         return <FiClock className="text-yellow-500" size={24} />
     }
@@ -42,6 +44,8 @@ const MyComplaints = () => {
         return 'bg-vibrant-green text-cream'
       case 'In Progress':
         return 'bg-orange-400 text-cream'
+      case 'Rejected':
+        return 'bg-red-500 text-cream'
       default:
         return 'bg-yellow-400 text-cream'
     }

@@ -219,6 +219,7 @@ const AdminComplaintDetails = () => {
                 <span className={`px-4 py-2 rounded-full text-sm font-bold ${
                   complaint.status === 'Resolved' ? 'bg-vibrant-green text-cream' :
                   complaint.status === 'In Progress' ? 'bg-orange-400 text-cream' :
+                  complaint.status === 'Rejected' ? 'bg-red-500 text-cream' :
                   'bg-yellow-400 text-cream'
                 }`}>
                   {complaint.status}
@@ -275,6 +276,7 @@ const AdminComplaintDetails = () => {
               >
                 <option value="Pending">Pending</option>
                 <option value="In Progress">In Progress</option>
+                <option value="Rejected">Rejected</option>
                 <option value="Resolved">Resolved</option>
               </select>
             </div>
@@ -298,26 +300,30 @@ const AdminComplaintDetails = () => {
           </div>
         </div>
 
-        <div className="bg-cream p-6 rounded-2xl shadow-soft border border-pale-green">
-          <h3 className="font-bold text-xl mb-5 text-deep-teal">Upload Resolution Proof</h3>
-          <form onSubmit={handleProofUpload} className="space-y-5">
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={(e) => setProofFiles(Array.from(e.target.files))}
-              className="w-full px-4 py-3 border-2 border-pale-green rounded-xl focus:outline-none focus:ring-2 focus:ring-medium-teal focus:border-medium-teal bg-white text-deep-teal"
-            />
-            <button
-              type="submit"
-              disabled={updating || proofFiles.length === 0}
-              className="w-full bg-vibrant-green text-cream py-4 rounded-xl font-bold text-lg hover:bg-green-dark disabled:opacity-50 flex items-center justify-center gap-2 shadow-md transform hover:scale-105 transition-all disabled:transform-none"
-            >
-              <FiUpload size={22} />
-              {updating ? 'Uploading...' : 'Upload Proof'}
-            </button>
-          </form>
-        </div>
+        {/* Only show proof upload when process is complete (status = Resolved) */}
+        {status === 'Resolved' && (
+          <div className="bg-cream p-6 rounded-2xl shadow-soft border border-pale-green">
+            <h3 className="font-bold text-xl mb-5 text-deep-teal">Upload Resolution Proof</h3>
+            <p className="text-sm text-medium-teal mb-4">Process is complete. Upload proof images below.</p>
+            <form onSubmit={handleProofUpload} className="space-y-5">
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => setProofFiles(Array.from(e.target.files))}
+                className="w-full px-4 py-3 border-2 border-pale-green rounded-xl focus:outline-none focus:ring-2 focus:ring-medium-teal focus:border-medium-teal bg-white text-deep-teal"
+              />
+              <button
+                type="submit"
+                disabled={updating || proofFiles.length === 0}
+                className="w-full bg-vibrant-green text-cream py-4 rounded-xl font-bold text-lg hover:bg-green-dark disabled:opacity-50 flex items-center justify-center gap-2 shadow-md transform hover:scale-105 transition-all disabled:transform-none"
+              >
+                <FiUpload size={22} />
+                {updating ? 'Uploading...' : 'Upload Proof'}
+              </button>
+            </form>
+          </div>
+        )}
 
         {/* Resolution Proof Section */}
         <div className="bg-cream p-6 rounded-2xl shadow-soft border border-pale-green">

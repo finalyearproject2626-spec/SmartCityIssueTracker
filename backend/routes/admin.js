@@ -5,6 +5,7 @@ const Admin = require('../models/Admin');
 const Complaint = require('../models/Complaint');
 const { adminAuth } = require('../middleware/auth');
 const { uploadProof } = require('../config/cloudinary');
+const { sendEmail, isEmailConfigured } = require('../config/email');
 
 // Admin Register (for initial setup)
 router.post('/register', async (req, res) => {
@@ -127,6 +128,9 @@ router.put('/complaints/:id/status', adminAuth, async (req, res) => {
       return res.status(404).json({ message: 'Complaint not found' });
     }
 
+    if (!['Pending', 'In Progress', 'Rejected', 'Resolved'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
     complaint.status = status;
     if (officerRemarks) complaint.officerRemarks = officerRemarks;
     if (status === 'Resolved') {
@@ -139,6 +143,18 @@ router.put('/complaints/:id/status', adminAuth, async (req, res) => {
     }
 
     await complaint.save();
+
+    if (isEmailConfigured()) {
+      const populated = await Complaint.findById(req.params.id).populate('userId', 'name email');
+      const userEmail = populated?.userId?.email;
+      if (userEmail) {
+        sendEmail({
+          to: userEmail,
+          subject: `Complaint ${complaint.complaintId} – Status updated to ${status}`,
+          html: `<p>Hi ${populated.userId.name || 'User'},</p><p>Your complaint <strong>${complaint.complaintId}</strong> has been updated to <strong>${status}</strong>.</p>${officerRemarks ? `<p>Remarks: ${officerRemarks}</p>` : ''}<p>— Smart City Issue Tracker</p>`
+        }).catch(err => console.error('Status email failed:', err.message));
+      }
+    }
 
     res.json(complaint);
   } catch (error) {
@@ -173,6 +189,37 @@ router.post('/complaints/:id/resolution-proof', adminAuth, uploadProof.array('pr
       complaint.status = 'Resolved';
       complaint.resolvedAt = new Date();
       await complaint.save();
+
+      if (isEmailConfigured()) {
+        const populated = await Complaint.findById(req.params.id).populate('userId', 'name email');
+        const userEmail = populated?.userId?.email;
+        if (userEmail) {
+          const proofImagesHtml = proofFiles
+            .filter(url => url && typeof url === 'string')
+            .map(url => `<img src="${url}" alt="Resolution proof" style="max-width:100%;height:auto;border-radius:8px;margin:8px 0;border:1px solid #ddd;" />`)
+            .join('');
+          const proofSection = proofImagesHtml
+            ? `<h3 style="color:#1a4d4d;margin:16px 0 8px;">Resolution Proof</h3><div style="margin:12px 0;">${proofImagesHtml}</div><p style="font-size:12px;color:#666;">You can also view these in the app under Complaint Details.</p>`
+            : '';
+          sendEmail({
+            to: userEmail,
+            subject: `Complaint ${complaint.complaintId} – Resolved with proof`,
+            html: `
+              <div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+                <h2 style="color:#1a4d4d;">Complaint Resolved</h2>
+                <p>Hi ${populated.userId.name || 'User'},</p>
+                <p>Your complaint <strong>${complaint.complaintId}</strong> (${complaint.category || 'General'}) has been <strong>Resolved</strong>.</p>
+                <p>Resolved on: <strong>${new Date(complaint.resolvedAt).toLocaleString()}</strong></p>
+                ${complaint.officerRemarks ? `<p><strong>Remarks:</strong> ${complaint.officerRemarks}</p>` : ''}
+                ${proofSection}
+                <p style="font-size:12px;color:#666;margin-top:12px;">If images don't load above, you can view the resolution proof in the app under <strong>My Complaints → Complaint Details</strong>.</p>
+                <hr style="border:none;border-top:1px solid #eee;margin:24px 0;" />
+                <p style="color:#666;font-size:12px;">— Smart City Issue Tracker</p>
+              </div>
+            `
+          }).catch(err => console.error('Resolution proof email failed:', err.message));
+        }
+      }
     } else {
       return res.status(400).json({ message: 'No files uploaded' });
     }
@@ -189,6 +236,7 @@ router.get('/dashboard/stats', adminAuth, async (req, res) => {
     const total = await Complaint.countDocuments();
     const pending = await Complaint.countDocuments({ status: 'Pending' });
     const inProgress = await Complaint.countDocuments({ status: 'In Progress' });
+    const rejected = await Complaint.countDocuments({ status: 'Rejected' });
     const resolved = await Complaint.countDocuments({ status: 'Resolved' });
 
     const recentComplaints = await Complaint.find()
@@ -200,6 +248,7 @@ router.get('/dashboard/stats', adminAuth, async (req, res) => {
       total,
       pending,
       inProgress,
+      rejected,
       resolved,
       recentComplaints
     });
