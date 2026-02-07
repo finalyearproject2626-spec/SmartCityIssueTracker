@@ -38,23 +38,22 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// Admin Login
-router.post('/login', async (req, res) => {
+// Static admin credentials – no DB check
+const STATIC_ADMIN_EMAIL = 'admingov@gmail.com';
+const STATIC_ADMIN_PASSWORD = 'admingov123';
+const STATIC_ADMIN_ID = 'static-admin';
+
+// Admin Login (static only – no database)
+router.post('/login', (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const admin = await Admin.findOne({ email });
-    if (!admin) {
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
-
-    const isMatch = await admin.comparePassword(password);
-    if (!isMatch) {
+    if (email !== STATIC_ADMIN_EMAIL || password !== STATIC_ADMIN_PASSWORD) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
     const token = jwt.sign(
-      { adminId: admin._id, role: 'admin' },
+      { adminId: STATIC_ADMIN_ID, role: 'admin' },
       process.env.JWT_SECRET || 'secret',
       { expiresIn: '30d' }
     );
@@ -62,9 +61,9 @@ router.post('/login', async (req, res) => {
     res.json({
       token,
       admin: {
-        id: admin._id,
-        name: admin.name,
-        email: admin.email
+        id: STATIC_ADMIN_ID,
+        name: 'Admin User',
+        email: STATIC_ADMIN_EMAIL
       }
     });
   } catch (error) {
@@ -134,7 +133,10 @@ router.put('/complaints/:id/status', adminAuth, async (req, res) => {
       complaint.resolvedAt = new Date();
     }
     complaint.updatedAt = new Date();
-    complaint.assignedTo = req.admin.adminId;
+    // Only set assignedTo for DB-backed admins (ObjectId); static admin has no ObjectId
+    if (req.admin.adminId !== STATIC_ADMIN_ID) {
+      complaint.assignedTo = req.admin.adminId;
+    }
 
     await complaint.save();
 
@@ -206,11 +208,19 @@ router.get('/dashboard/stats', adminAuth, async (req, res) => {
   }
 });
 
-// Get current admin
-router.get('/me', adminAuth, async (req, res) => {
+// Get current admin (static admin has no DB record)
+router.get('/me', adminAuth, (req, res) => {
   try {
-    const admin = await Admin.findById(req.admin.adminId).select('-password');
-    res.json(admin);
+    if (req.admin.adminId === STATIC_ADMIN_ID) {
+      return res.json({
+        _id: STATIC_ADMIN_ID,
+        name: 'Admin User',
+        email: STATIC_ADMIN_EMAIL
+      });
+    }
+    Admin.findById(req.admin.adminId).select('-password')
+      .then(admin => res.json(admin))
+      .catch(err => res.status(500).json({ message: err.message }));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

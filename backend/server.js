@@ -20,16 +20,20 @@ app.use('/api/user', require('./routes/user'));
 app.use('/api/complaints', require('./routes/complaints'));
 app.use('/api/admin', require('./routes/admin'));
 
-// MongoDB Connection
+// MongoDB Connection – wait for connection before accepting requests
+const PORT = process.env.PORT || 5001;
+
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/smartcity', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log('MongoDB Connected'))
-.catch(err => console.error('MongoDB connection error:', err));
-
-const PORT = process.env.PORT || 5001;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+.then(() => {
+  console.log('MongoDB Connected');
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+})
+.catch(err => {
+  console.error('MongoDB connection error:', err);
+  process.exit(1);
 });

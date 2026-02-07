@@ -64,8 +64,8 @@ Frontend will run on `http://localhost:3000`
 ### Admin Flow
 - Navigate to `http://localhost:3000/admin/login`
 - Login with:
-  - Email: `admin@city.gov`
-  - Password: `admin123`
+  - Email: `admingov@gmail.com`
+  - Password: `admingov123`
 
 ## MongoDB Atlas Setup
 
@@ -111,4 +111,4 @@ mongodb+srv://username:password@cluster.mongodb.net/smartcity?retryWrites=true&w
 - OTP is currently returned in API response for development. In production, integrate with Twilio.
 - File uploads are stored in `backend/uploads/` directory
 - Make sure MongoDB Atlas connection is working before starting the app
-- Default admin credentials: admin@city.gov / admin123
+- Default admin credentials: admingov@gmail.com / admingov123

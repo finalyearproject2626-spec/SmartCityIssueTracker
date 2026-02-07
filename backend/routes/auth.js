@@ -60,8 +60,8 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Check if admin credentials
-    if (email === 'admin@city.gov') {
+    // Check if admin credentials (default admin – redirect to admin dashboard)
+    if (email === 'admingov@gmail.com') {
       const admin = await Admin.findOne({ email });
       if (admin) {
         const isMatch = await admin.comparePassword(password);

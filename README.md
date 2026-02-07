@@ -104,15 +104,15 @@ POST http://localhost:5000/api/admin/register
 Content-Type: application/json
 
 {
-  "email": "admin@city.gov",
-  "password": "admin123",
+  "email": "admingov@gmail.com",
+  "password": "admingov123",
   "name": "Admin User"
 }
 ```
 
 Or use the default credentials:
-- Email: admin@city.gov
-- Password: admin123
+- Email: admingov@gmail.com
+- Password: admingov123
 
 ## Project Structure
 

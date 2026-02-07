@@ -6,7 +6,7 @@ import api from '../../utils/api'
 const AdminLogin = () => {
   const navigate = useNavigate()
   const { adminLogin } = useAuth()
-  const [formData, setFormData] = useState({ email: '', password: '' })
+  const [formData, setFormData] = useState({ email: 'admingov@gmail.com', password: 'admingov123' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -81,7 +81,7 @@ const AdminLogin = () => {
         </form>
 
         <p className="mt-6 text-center text-sm text-medium-teal">
-          Default: admin@city.gov / admin123
+          Default: admingov@gmail.com / admingov123
         </p>
       </div>
     </div>

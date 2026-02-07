@@ -9,7 +9,7 @@ const createAdmin = async () => {
       useUnifiedTopology: true,
     });
 
-    const existingAdmin = await Admin.findOne({ email: 'admin@city.gov' });
+    const existingAdmin = await Admin.findOne({ email: 'admingov@gmail.com' });
     
     if (existingAdmin) {
       console.log('Admin already exists');
@@ -17,15 +17,15 @@ const createAdmin = async () => {
     }
 
     const admin = new Admin({
-      email: 'admin@city.gov',
-      password: 'admin123',
+      email: 'admingov@gmail.com',
+      password: 'admingov123',
       name: 'Admin User'
     });
 
     await admin.save();
     console.log('Admin created successfully!');
-    console.log('Email: admin@city.gov');
-    console.log('Password: admin123');
+    console.log('Email: admingov@gmail.com');
+    console.log('Password: admingov123');
     
     process.exit(0);
   } catch (error) {
