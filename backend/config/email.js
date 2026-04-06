@@ -8,7 +8,11 @@ const transporter = nodemailer.createTransport({
   auth: {
     user: emailUser,
     pass: emailPass
-  }
+  },
+  // Prevent hanging forever on production networks (Render free tier)
+  pool: false,
+  maxConnections: 1,
+  connectionTimeout: 15000
 });
 
 function isEmailConfigured() {
@@ -21,13 +25,19 @@ async function sendEmail({ to, subject, text, html }) {
     return { skipped: true };
   }
   try {
-    const info = await transporter.sendMail({
+    const sendPromise = transporter.sendMail({
       from: `"Smart City Issue Tracker" <${emailUser}>`,
       to,
       subject,
       text: text || (html && html.replace(/<[^>]*>/g, '')),
       html: html || text
     });
+
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Email send timed out')), 20000);
+    });
+
+    const info = await Promise.race([sendPromise, timeoutPromise]);
     return { success: true, messageId: info.messageId };
   } catch (err) {
     console.error('Email send error:', err.message);

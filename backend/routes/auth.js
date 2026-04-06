@@ -227,7 +227,7 @@ router.get('/me', auth, async (req, res) => {
 });
 
 // Forgot Password – sends reset link to email
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+const FRONTEND_URL = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '');
 router.post('/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
@@ -237,6 +237,11 @@ router.post('/forgot-password', async (req, res) => {
     if (!user) {
       return res.status(400).json({ message: 'No account found with this email.' });
     }
+    console.log('[forgot-password] request', {
+      email: normalizedEmail,
+      emailConfigured: isEmailConfigured(),
+      frontend: FRONTEND_URL
+    });
     if (!user.password) {
       return res.status(400).json({ message: 'This account uses mobile OTP. Please sign in with your mobile number.' });
     }
@@ -249,12 +254,14 @@ router.post('/forgot-password', async (req, res) => {
     const resetLink = `${FRONTEND_URL}/reset-password?token=${resetToken}`;
 
     if (isEmailConfigured()) {
+      console.log('[forgot-password] sending email to', user.email, 'resetLinkHost=', FRONTEND_URL);
       await sendEmail({
         to: user.email,
         subject: 'Reset your password – Smart City Issue Tracker',
         html: `<p>Hi ${user.name || 'User'},</p><p>You requested a password reset. Click the link below (valid for 1 hour):</p><p><a href="${resetLink}">${resetLink}</a></p><p>If you didn't request this, ignore this email.</p><p>— Smart City Issue Tracker</p>`
       });
     } else {
+      console.log('[forgot-password] email not configured');
       return res.status(503).json({ message: 'Email is not configured. Contact support.' });
     }
 
