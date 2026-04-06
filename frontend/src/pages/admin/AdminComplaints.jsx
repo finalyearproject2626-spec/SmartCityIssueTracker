@@ -2,11 +2,27 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../utils/api'
-import { FiArrowLeft, FiFilter, FiLogOut } from 'react-icons/fi'
+import { FiArrowLeft } from 'react-icons/fi'
+import { complaintCategoryLabel, complaintStatusLabel } from '../../utils/complaintLabels'
 
 const AdminComplaints = () => {
   const navigate = useNavigate()
-  const { logout } = useAuth()
+  const { language } = useAuth()
+  const isTa = language === 'tamil'
+  const tr = {
+    title: isTa ? 'அனைத்துப் புகார்கள்' : 'All complaints',
+    allStatus: isTa ? 'அனைத்து நிலைகள்' : 'All status',
+    allCategories: isTa ? 'அனைத்து வகைகள்' : 'All categories',
+    noComplaints: isTa ? 'புகார்கள் எதுவும் இல்லை' : 'No complaints found',
+    complaintId: isTa ? 'புகார் ஐடி' : 'Complaint ID',
+    category: isTa ? 'வகை' : 'Category',
+    user: isTa ? 'பயனர்' : 'User',
+    pending: isTa ? 'நிலுவையில்' : 'Pending',
+    inProgress: isTa ? 'செயல்பாட்டில்' : 'In Progress',
+    rejected: isTa ? 'நிராகரிக்கப்பட்டது' : 'Rejected',
+    resolved: isTa ? 'தீர்க்கப்பட்டது' : 'Resolved'
+  }
+  const categories = ['Road', 'Water', 'Electricity', 'Waste', 'Drainage', 'Street Light', 'Other']
   const [complaints, setComplaints] = useState([])
   const [loading, setLoading] = useState(true)
   const [filters, setFilters] = useState({ status: '', category: '' })
@@ -43,57 +59,40 @@ const AdminComplaints = () => {
     }
   }
 
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-soft">
-      <div className="bg-gradient-teal text-cream p-6 flex items-center justify-between shadow-teal">
-        <div className="flex items-center gap-4">
-          <button onClick={() => navigate('/admin/dashboard')} className="p-3 bg-medium-teal hover:bg-teal-light rounded-full transition-all shadow-md">
-            <FiArrowLeft size={22} className="text-cream" />
-          </button>
-          <h1 className="text-2xl font-bold">All Complaints</h1>
-        </div>
-        <button
-          onClick={handleLogout}
-          className="p-3 bg-medium-teal hover:bg-teal-light rounded-full flex items-center gap-2 transition-all shadow-md hover:shadow-lg"
-          title="Logout"
-        >
-          <FiLogOut size={20} className="text-cream" />
-          <span className="hidden sm:inline text-cream font-semibold">Logout</span>
+    <div className="min-h-screen bg-gradient-soft pb-8">
+      <div className="bg-gradient-to-br from-deep-teal via-medium-teal to-teal-light text-cream p-4 sm:p-6 flex items-center gap-4 shadow-teal">
+        <button onClick={() => navigate('/admin/dashboard')} className="p-2 sm:p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all">
+          <FiArrowLeft size={22} className="text-cream" />
         </button>
+        <h1 className="text-xl sm:text-2xl font-bold">{tr.title}</h1>
       </div>
 
-      <div className="p-6">
-        <div className="bg-cream p-5 rounded-2xl shadow-soft border border-pale-green mb-6">
-          <div className="flex gap-4">
+      <div className="p-4 sm:p-6 max-w-6xl mx-auto">
+        <div className="bg-cream p-4 sm:p-5 rounded-2xl shadow-soft border border-pale-green mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <select
               value={filters.status}
               onChange={(e) => setFilters({ ...filters, status: e.target.value })}
               className="flex-1 px-4 py-3 border-2 border-pale-green rounded-xl focus:outline-none focus:ring-2 focus:ring-medium-teal focus:border-medium-teal bg-white text-deep-teal font-semibold"
             >
-              <option value="">All Status</option>
-              <option value="Pending">Pending</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Rejected">Rejected</option>
-              <option value="Resolved">Resolved</option>
+              <option value="">{tr.allStatus}</option>
+              <option value="Pending">{tr.pending}</option>
+              <option value="In Progress">{tr.inProgress}</option>
+              <option value="Rejected">{tr.rejected}</option>
+              <option value="Resolved">{tr.resolved}</option>
             </select>
             <select
               value={filters.category}
               onChange={(e) => setFilters({ ...filters, category: e.target.value })}
               className="flex-1 px-4 py-3 border-2 border-pale-green rounded-xl focus:outline-none focus:ring-2 focus:ring-medium-teal focus:border-medium-teal bg-white text-deep-teal font-semibold"
             >
-              <option value="">All Categories</option>
-              <option value="Road">Road</option>
-              <option value="Water">Water</option>
-              <option value="Electricity">Electricity</option>
-              <option value="Waste">Waste</option>
-              <option value="Drainage">Drainage</option>
-              <option value="Street Light">Street Light</option>
-              <option value="Other">Other</option>
+              <option value="">{tr.allCategories}</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {complaintCategoryLabel(language, cat)}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -104,7 +103,7 @@ const AdminComplaints = () => {
           </div>
         ) : complaints.length === 0 ? (
           <div className="text-center py-12 bg-cream rounded-2xl shadow-soft border border-pale-green">
-            <p className="text-deep-teal text-lg font-semibold">No complaints found</p>
+            <p className="text-deep-teal text-lg font-semibold">{tr.noComplaints}</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -112,23 +111,23 @@ const AdminComplaints = () => {
               <div
                 key={complaint._id}
                 onClick={() => navigate(`/admin/complaints/${complaint._id}`)}
-                className="bg-cream p-5 rounded-2xl shadow-soft border border-pale-green cursor-pointer hover:shadow-teal transform hover:scale-105 transition-all"
+                className="bg-cream p-4 sm:p-5 rounded-2xl shadow-soft border border-pale-green cursor-pointer hover:shadow-teal hover:border-medium-teal/30 transform hover:scale-[1.01] active:scale-[0.99] transition-all duration-300"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <p className="text-sm text-medium-teal font-semibold mb-1">Complaint ID</p>
+                    <p className="text-sm text-medium-teal font-semibold mb-1">{tr.complaintId}</p>
                     <p className="font-bold text-deep-teal text-lg">{complaint.complaintId}</p>
                   </div>
                   <span className={`px-4 py-2 rounded-full text-xs font-bold ${getStatusColor(complaint.status)}`}>
-                    {complaint.status}
+                    {complaintStatusLabel(language, complaint.status)}
                   </span>
                 </div>
                 <div className="mt-3">
-                  <p className="text-sm text-medium-teal font-semibold mb-1">Category</p>
-                  <p className="font-semibold text-deep-teal">{complaint.category}</p>
+                  <p className="text-sm text-medium-teal font-semibold mb-1">{tr.category}</p>
+                  <p className="font-semibold text-deep-teal">{complaintCategoryLabel(language, complaint.category)}</p>
                 </div>
                 <div className="mt-3">
-                  <p className="text-sm text-medium-teal font-semibold mb-1">User</p>
+                  <p className="text-sm text-medium-teal font-semibold mb-1">{tr.user}</p>
                   <p className="font-semibold text-deep-teal">{complaint.userId?.name || 'N/A'}</p>
                 </div>
                 <p className="text-xs text-medium-teal mt-3">

@@ -1,42 +1,56 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../utils/api'
+import { FiArrowLeft } from 'react-icons/fi'
+import logo from '../../assets/logo.png'
 
 const Login = () => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { login, adminLogin, language } = useAuth()
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    name: ''
-  })
-  const [isRegister, setIsRegister] = useState(false)
+  const isTamil = language === 'tamil'
+  const hasRegistered = sessionStorage.getItem('scit_registered') === 'true'
+  const initialRegisterMode = searchParams.get('mode') === 'register' || !hasRegistered
+  const [formData, setFormData] = useState({ email: '', password: '', name: '' })
+  const [isRegister, setIsRegister] = useState(initialRegisterMode)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
+  const tr = {
+    back: isTamil ? 'முகப்புக்கு திரும்பு' : 'Back to Home',
+    register: isTamil ? 'பதிவு' : 'Register',
+    login: isTamil ? 'உள்நுழை' : 'Login',
+    title: isTamil ? 'மக்களுக்கான சேவை புகார் தளம்' : 'Civic Issue Reporting for Citizens',
+    registrationSuccess: isTamil ? 'பதிவு வெற்றி. தொடர உள்நுழையவும்.' : 'Registration successful. Please login to continue.',
+    loginFailed: isTamil ? 'உள்நுழைவு தோல்வி' : 'Login failed',
+    name: isTamil ? 'பெயர்' : 'Name',
+    email: isTamil ? 'மின்னஞ்சல்' : 'Email',
+    password: isTamil ? 'கடவுச்சொல்' : 'Password',
+    loading: isTamil ? 'ஏற்றுகிறது...' : 'Loading...',
+    alreadyAccount: isTamil ? 'ஏற்கனவே கணக்கு உள்ளதா? உள்நுழை' : 'Already have an account? Login',
+    noAccount: isTamil ? 'கணக்கு இல்லையா? பதிவு செய்யவும்' : "Don't have an account? Register"
+  }
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
     setError('')
+    setSuccessMessage('')
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError('')
-
     try {
       if (isRegister) {
-        const res = await api.post('/auth/register', {
-          ...formData,
-          language
-        })
-        login(res.data.token, res.data.user)
-        navigate('/home')
+        await api.post('/auth/register', { ...formData, language })
+        sessionStorage.setItem('scit_registered', 'true')
+        setSuccessMessage(tr.registrationSuccess)
+        setIsRegister(false)
+        setFormData({ email: formData.email, password: '', name: '' })
       } else {
         const res = await api.post('/auth/login', formData)
-        
-        // Check if admin login
         if (res.data.isAdmin && res.data.admin) {
           adminLogin(res.data.token, res.data.admin)
           navigate('/admin/dashboard')
@@ -45,101 +59,92 @@ const Login = () => {
           navigate('/home')
         }
       }
-    } catch (error) {
-      let errorMessage = 'Failed to submit complaint'
-      
-      if (error.response?.data) {
-        errorMessage = error.response.data.message || 
-                       error.response.data.error || 
-                       error.response.data.toString() ||
-                       `Server error: ${error.response.status}`
-      } else if (error.message) {
-        errorMessage = error.message
-      }
-      
-      setError(errorMessage)
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || tr.loginFailed)
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-primary flex items-center justify-center p-4">
-      <div className="bg-cream rounded-3xl shadow-soft p-8 w-full max-w-md border border-pale-green">
+    <div className="min-h-screen bg-gradient-to-br from-deep-teal via-medium-teal to-teal-light flex items-center justify-center p-4 py-8 sm:py-12">
+      <div className="bg-cream rounded-3xl shadow-soft p-6 sm:p-8 w-full max-w-md border border-pale-green animate-scale-in">
+        <Link to="/" className="inline-flex items-center gap-2 text-medium-teal hover:text-deep-teal mb-4 text-sm transition">
+          <FiArrowLeft size={16} />
+          {tr.back}
+        </Link>
         <div className="text-center mb-6">
           <div className="w-16 h-16 bg-gradient-teal rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl">🏙️</span>
+            <img src={logo} alt="SCIT Logo" className="w-12 h-12 rounded-full object-cover bg-white" />
           </div>
-          <h2 className="text-3xl font-bold text-deep-teal mb-2">
-            {isRegister ? 'Register' : 'Login'}
+          <h2 className="text-2xl sm:text-3xl font-bold text-deep-teal mb-2">
+            {isRegister ? tr.register : tr.login}
           </h2>
-          <p className="text-medium-teal text-sm">Smart City Issue Tracker</p>
+          <p className="text-medium-teal text-sm">{tr.title}</p>
         </div>
 
+        {successMessage && (
+          <div className="bg-green-50 border-2 border-green-300 text-green-700 px-4 py-3 rounded-xl mb-4 text-sm animate-fade-in">
+            {successMessage}
+          </div>
+        )}
+
         {error && (
-          <div className="bg-red-50 border-2 border-red-300 text-red-700 px-4 py-3 rounded-xl mb-4">
+          <div className="bg-red-50 border-2 border-red-300 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm animate-fade-in">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="space-y-4">
           {isRegister && (
-            <div className="mb-4">
-              <label className="block text-deep-teal font-semibold mb-2">
-                Name
-              </label>
+            <div>
+              <label className="block text-deep-teal font-semibold mb-2 text-sm">{tr.name}</label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border-2 border-pale-green rounded-xl focus:outline-none focus:ring-2 focus:ring-medium-teal focus:border-medium-teal bg-white text-deep-teal"
+                className="w-full px-4 py-3 border-2 border-pale-green rounded-xl focus:outline-none focus:ring-2 focus:ring-medium-teal focus:border-medium-teal bg-white text-deep-teal transition"
                 required
               />
             </div>
           )}
-          <div className="mb-4">
-            <label className="block text-deep-teal font-semibold mb-2">
-              Email
-            </label>
+          <div>
+            <label className="block text-deep-teal font-semibold mb-2 text-sm">{tr.email}</label>
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-4 py-3 border-2 border-pale-green rounded-xl focus:outline-none focus:ring-2 focus:ring-medium-teal focus:border-medium-teal bg-white text-deep-teal"
+              className="w-full px-4 py-3 border-2 border-pale-green rounded-xl focus:outline-none focus:ring-2 focus:ring-medium-teal focus:border-medium-teal bg-white text-deep-teal transition"
               required
             />
           </div>
-          <div className="mb-4">
-            <label className="block text-deep-teal font-semibold mb-2">
-              Password
-            </label>
+          <div>
+            <label className="block text-deep-teal font-semibold mb-2 text-sm">{tr.password}</label>
             <input
               type="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className="w-full px-4 py-3 border-2 border-pale-green rounded-xl focus:outline-none focus:ring-2 focus:ring-medium-teal focus:border-medium-teal bg-white text-deep-teal"
+              className="w-full px-4 py-3 border-2 border-pale-green rounded-xl focus:outline-none focus:ring-2 focus:ring-medium-teal focus:border-medium-teal bg-white text-deep-teal transition"
               required
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-primary text-cream py-4 rounded-xl font-bold text-lg hover:shadow-teal transform hover:scale-105 transition-all disabled:opacity-50 disabled:transform-none shadow-md"
+            className="w-full bg-gradient-primary text-cream py-4 rounded-xl font-bold text-lg hover:shadow-teal transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:transform-none shadow-md"
           >
-            {loading ? 'Loading...' : isRegister ? 'Register' : 'Login'}
+            {loading ? tr.loading : isRegister ? tr.register : tr.login}
           </button>
-          <div className="mt-4 text-center">
+          <div className="text-center">
             <button
               type="button"
               onClick={() => setIsRegister(!isRegister)}
-              className="text-medium-teal hover:text-deep-teal font-semibold"
+              className="text-medium-teal hover:text-deep-teal font-semibold text-sm transition"
             >
-              {isRegister
-                ? 'Already have an account? Login'
-                : "Don't have an account? Register"}
+              {isRegister ? tr.alreadyAccount : tr.noAccount}
             </button>
           </div>
         </form>

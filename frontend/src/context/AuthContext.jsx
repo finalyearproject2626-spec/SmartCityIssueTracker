@@ -88,7 +88,7 @@ export const AuthProvider = ({ children }) => {
       login: 'Login',
       register: 'Register',
       home: 'Home',
-      raiseComplaint: 'Raise a Complaint',
+      raiseComplaint: 'Raise a complaint',
       myComplaints: 'My Complaints',
       profile: 'Profile',
       logout: 'Logout'
@@ -98,8 +98,8 @@ export const AuthProvider = ({ children }) => {
       selectLanguage: 'மொழியைத் தேர்ந்தெடுக்கவும்',
       login: 'உள்நுழை',
       register: 'பதிவு செய்',
-      home: 'வீடு',
-      raiseComplaint: 'புகாரை உயர்த்தவும்',
+      home: 'முகப்பு',
+      raiseComplaint: 'புகார் செய்',
       myComplaints: 'எனது புகார்கள்',
       profile: 'சுயவிவரம்',
       logout: 'வெளியேறு'

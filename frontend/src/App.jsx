@@ -6,8 +6,8 @@ import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 
 // User Pages
+import LandingPage from './pages/user/LandingPage'
 import SplashScreen from './pages/user/SplashScreen'
-import LanguageSelection from './pages/user/LanguageSelection'
 import Login from './pages/user/Login'
 import Home from './pages/user/Home'
 import RaiseComplaint from './pages/user/RaiseComplaint'
@@ -33,8 +33,8 @@ function App() {
           <main className="flex-1">
             <Routes>
           {/* User Routes */}
-          <Route path="/" element={<SplashScreen />} />
-          <Route path="/language" element={<LanguageSelection />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/splash" element={<SplashScreen />} />
           <Route path="/login" element={<Login />} />
           <Route path="/home" element={<PrivateRoute><Home /></PrivateRoute>} />
           <Route path="/raise-complaint" element={<PrivateRoute><RaiseComplaint /></PrivateRoute>} />

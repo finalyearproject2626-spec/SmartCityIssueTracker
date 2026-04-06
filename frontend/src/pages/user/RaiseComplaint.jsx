@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../utils/api'
-import { FiArrowLeft, FiCamera, FiMapPin } from 'react-icons/fi'
+import { FiArrowLeft, FiMapPin } from 'react-icons/fi'
+import ImageUploadWithCamera from '../../components/ImageUploadWithCamera'
+import { complaintCategoryLabel } from '../../utils/complaintLabels'
 
 const RaiseComplaint = () => {
   const navigate = useNavigate()
@@ -22,28 +24,38 @@ const RaiseComplaint = () => {
 
   const translations = {
     english: {
-      title: 'Raise a Complaint',
+      title: 'Raise a complaint',
       category: 'Category',
       description: 'Description',
       location: 'Location',
       uploadMedia: 'Upload Photo/Video',
-      getLocation: 'Get Current Location',
+      getLocation: 'Get current location',
       submit: 'Submit',
-      selectCategory: 'Select Category',
+      submitting: 'Submitting...',
+      selectCategory: 'Select category',
       enterDescription: 'Enter complaint description...',
-      locationDetected: 'Location detected'
+      locationDetected: 'Location detected',
+      failedLocation: 'Could not get location',
+      geolocationUnsupported: 'Geolocation is not supported on this device',
+      fillRequired: 'Please fill all required fields and get your location',
+      failedSubmit: 'Failed to submit complaint'
     },
     tamil: {
-      title: 'புகாரை உயர்த்தவும்',
+      title: 'புகார் செய்',
       category: 'வகை',
       description: 'விளக்கம்',
       location: 'இடம்',
       uploadMedia: 'புகைப்படம்/வீடியோவை பதிவேற்றவும்',
       getLocation: 'தற்போதைய இடத்தைப் பெறவும்',
       submit: 'சமர்ப்பிக்க',
+      submitting: 'சமர்ப்பிக்கிறது...',
       selectCategory: 'வகையைத் தேர்ந்தெடுக்கவும்',
       enterDescription: 'புகார் விளக்கத்தை உள்ளிடவும்...',
-      locationDetected: 'இடம் கண்டறியப்பட்டது'
+      locationDetected: 'இடம் கண்டறியப்பட்டது',
+      failedLocation: 'இடத்தைப் பெற முடியவில்லை',
+      geolocationUnsupported: 'இந்த சாதனத்தில் இடம் கண்டறியப்படாது',
+      fillRequired: 'தேவையான அனைத்தையும் நிரப்பி இடத்தைப் பெறவும்',
+      failedSubmit: 'புகாரைச் சமர்ப்பிக்க முடியவில்லை'
     }
   }
 
@@ -51,11 +63,6 @@ const RaiseComplaint = () => {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
-
-  const handleFileChange = (e) => {
-    const selectedFiles = Array.from(e.target.files)
-    setFiles([...files, ...selectedFiles])
   }
 
   const getCurrentLocation = () => {
@@ -68,12 +75,12 @@ const RaiseComplaint = () => {
             longitude: position.coords.longitude
           })
         },
-        (error) => {
-          setError('Failed to get location')
+        () => {
+          setError(tr.failedLocation)
         }
       )
     } else {
-      setError('Geolocation is not supported')
+      setError(tr.geolocationUnsupported)
     }
   }
 
@@ -83,7 +90,7 @@ const RaiseComplaint = () => {
     setError('')
 
     if (!formData.category || !formData.description || !formData.latitude) {
-      setError('Please fill all required fields and get your location')
+      setError(tr.fillRequired)
       setLoading(false)
       return
     }
@@ -109,7 +116,7 @@ const RaiseComplaint = () => {
       navigate(`/complaint-confirmation/${res.data._id}`)
     } catch (error) {
       console.error('Complaint submission error:', error)
-      let errorMessage = 'Failed to submit complaint'
+      let errorMessage = tr.failedSubmit
       
       if (error.response?.data) {
         errorMessage = error.response.data.message || 
@@ -127,22 +134,22 @@ const RaiseComplaint = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-soft">
-      <div className="bg-gradient-teal text-cream p-6 flex items-center gap-4 shadow-teal">
-        <button onClick={() => navigate('/home')} className="p-3 bg-medium-teal hover:bg-teal-light rounded-full transition-all shadow-md">
+    <div className="min-h-screen bg-gradient-soft pb-8">
+      <div className="bg-gradient-to-br from-deep-teal via-medium-teal to-teal-light text-cream p-4 sm:p-6 flex items-center gap-4 shadow-teal">
+        <button onClick={() => navigate('/home')} className="p-2 sm:p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all">
           <FiArrowLeft size={22} className="text-cream" />
         </button>
-        <h1 className="text-2xl font-bold">{tr.title}</h1>
+        <h1 className="text-xl sm:text-2xl font-bold">{tr.title}</h1>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-6 space-y-5">
+      <form onSubmit={handleSubmit} className="p-4 sm:p-6 max-w-2xl mx-auto space-y-4 sm:space-y-5">
         {error && (
           <div className="bg-red-50 border-2 border-red-300 text-red-700 px-5 py-4 rounded-2xl">
             {error}
           </div>
         )}
 
-        <div className="bg-cream p-5 rounded-2xl shadow-soft border border-pale-green">
+        <div className="bg-cream p-4 sm:p-5 rounded-2xl shadow-soft border border-pale-green hover:shadow-teal transition-all">
           <label className="block text-deep-teal font-semibold mb-3">{tr.category}</label>
           <select
             name="category"
@@ -154,13 +161,13 @@ const RaiseComplaint = () => {
             <option value="">{tr.selectCategory}</option>
             {categories.map((cat) => (
               <option key={cat} value={cat}>
-                {cat}
+                {complaintCategoryLabel(language, cat)}
               </option>
             ))}
           </select>
         </div>
 
-        <div className="bg-cream p-5 rounded-2xl shadow-soft border border-pale-green">
+        <div className="bg-cream p-4 sm:p-5 rounded-2xl shadow-soft border border-pale-green hover:shadow-teal transition-all">
           <label className="block text-deep-teal font-semibold mb-3">{tr.description}</label>
           <textarea
             name="description"
@@ -173,7 +180,7 @@ const RaiseComplaint = () => {
           />
         </div>
 
-        <div className="bg-cream p-5 rounded-2xl shadow-soft border border-pale-green">
+        <div className="bg-cream p-4 sm:p-5 rounded-2xl shadow-soft border border-pale-green hover:shadow-teal transition-all">
           <label className="block text-deep-teal font-semibold mb-3">{tr.location}</label>
           <button
             type="button"
@@ -188,26 +195,22 @@ const RaiseComplaint = () => {
           )}
         </div>
 
-        <div className="bg-cream p-5 rounded-2xl shadow-soft border border-pale-green">
-          <label className="block text-deep-teal font-semibold mb-3">{tr.uploadMedia}</label>
-          <input
-            type="file"
+        <div className="bg-cream p-4 sm:p-5 rounded-2xl shadow-soft border border-pale-green hover:shadow-teal transition-all">
+          <ImageUploadWithCamera
+            files={files}
+            onChange={setFiles}
             accept="image/*,video/*"
             multiple
-            onChange={handleFileChange}
-            className="w-full px-4 py-3 border-2 border-pale-green rounded-xl focus:outline-none focus:ring-2 focus:ring-medium-teal focus:border-medium-teal bg-white text-deep-teal"
+            label={tr.uploadMedia}
           />
-          {files.length > 0 && (
-            <p className="mt-3 text-sm text-medium-teal font-semibold bg-pale-green px-3 py-2 rounded-xl">{files.length} file(s) selected</p>
-          )}
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-gradient-primary text-cream py-5 rounded-2xl font-bold text-lg hover:shadow-teal transform hover:scale-105 transition-all disabled:opacity-50 disabled:transform-none shadow-md"
+          className="w-full bg-gradient-primary text-cream py-4 sm:py-5 rounded-2xl font-bold text-lg hover:shadow-teal transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:transform-none shadow-md"
         >
-          {loading ? 'Submitting...' : tr.submit}
+          {loading ? tr.submitting : tr.submit}
         </button>
       </form>
     </div>

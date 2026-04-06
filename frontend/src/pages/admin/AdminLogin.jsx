@@ -1,14 +1,32 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../utils/api'
+import { FiX } from 'react-icons/fi'
+import logo from '../../assets/logo.png'
+import { DEFAULT_ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD } from '../../constants/adminDefaults'
 
 const AdminLogin = () => {
   const navigate = useNavigate()
-  const { adminLogin } = useAuth()
-  const [formData, setFormData] = useState({ email: 'admingov@gmail.com', password: 'admingov123' })
+  const { adminLogin, language } = useAuth()
+  const isTamil = language === 'tamil'
+  const [formData, setFormData] = useState({ email: DEFAULT_ADMIN_EMAIL, password: DEFAULT_ADMIN_PASSWORD })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const tr = {
+    close: isTamil ? 'மூடு / முகப்புக்கு திரும்பு' : 'Close / Back to home',
+    adminLogin: isTamil ? 'நிர்வாக உள்நுழைவு' : 'Admin Login',
+    adminPortal: isTamil ? 'ஸ்மார்ட் சிட்டி நிர்வாக தளம்' : 'Smart City Admin Portal',
+    loginFailed: isTamil ? 'உள்நுழைவு தோல்வி' : 'Login failed',
+    email: isTamil ? 'மின்னஞ்சல்' : 'Email',
+    password: isTamil ? 'கடவுச்சொல்' : 'Password',
+    loading: isTamil ? 'ஏற்றுகிறது...' : 'Loading...',
+    login: isTamil ? 'உள்நுழை' : 'Login',
+    defaultCreds: isTamil
+      ? `இயல்புநிலை: ${DEFAULT_ADMIN_EMAIL} / ${DEFAULT_ADMIN_PASSWORD}`
+      : `Default: ${DEFAULT_ADMIN_EMAIL} / ${DEFAULT_ADMIN_PASSWORD}`
+  }
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -25,21 +43,29 @@ const AdminLogin = () => {
       adminLogin(res.data.token, res.data.admin)
       navigate('/admin/dashboard')
     } catch (error) {
-      setError(error.response?.data?.message || 'Login failed')
+      setError(error.response?.data?.message || tr.loginFailed)
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-primary flex items-center justify-center p-4">
-      <div className="bg-cream rounded-3xl shadow-soft p-8 w-full max-w-md border border-pale-green">
+    <div className="min-h-screen bg-gradient-to-br from-deep-teal via-medium-teal to-teal-light flex items-center justify-center p-4 pt-24 relative">
+      <div className="bg-cream rounded-3xl shadow-soft p-8 w-full max-w-md border border-pale-green relative">
+        <Link
+          to="/"
+          className="absolute top-6 right-6 p-2 rounded-full bg-pale-green/20 hover:bg-pale-green/40 text-deep-teal transition-colors flex items-center justify-center"
+          aria-label="Close"
+          title={tr.close}
+        >
+          <FiX size={24} strokeWidth={2.5} />
+        </Link>
         <div className="text-center mb-6">
           <div className="w-16 h-16 bg-gradient-teal rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl">👤</span>
+            <img src={logo} alt="SCIT Logo" className="w-12 h-12 rounded-full object-cover bg-white" />
           </div>
-          <h2 className="text-3xl font-bold text-deep-teal mb-2">Admin Login</h2>
-          <p className="text-medium-teal text-sm">Smart City Admin Portal</p>
+          <h2 className="text-3xl font-bold text-deep-teal mb-2">{tr.adminLogin}</h2>
+          <p className="text-medium-teal text-sm">{tr.adminPortal}</p>
         </div>
 
         {error && (
@@ -50,7 +76,7 @@ const AdminLogin = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-5">
-            <label className="block text-deep-teal font-semibold mb-2">Email</label>
+            <label className="block text-deep-teal font-semibold mb-2">{tr.email}</label>
             <input
               type="email"
               name="email"
@@ -61,7 +87,7 @@ const AdminLogin = () => {
             />
           </div>
           <div className="mb-5">
-            <label className="block text-deep-teal font-semibold mb-2">Password</label>
+            <label className="block text-deep-teal font-semibold mb-2">{tr.password}</label>
             <input
               type="password"
               name="password"
@@ -76,12 +102,12 @@ const AdminLogin = () => {
             disabled={loading}
             className="w-full bg-gradient-primary text-cream py-4 rounded-xl font-bold text-lg hover:shadow-teal transform hover:scale-105 transition-all disabled:opacity-50 disabled:transform-none shadow-md"
           >
-            {loading ? 'Loading...' : 'Login'}
+            {loading ? tr.loading : tr.login}
           </button>
         </form>
 
         <p className="mt-6 text-center text-sm text-medium-teal">
-          Default: admingov@gmail.com / admingov123
+          {tr.defaultCreds}
         </p>
       </div>
     </div>

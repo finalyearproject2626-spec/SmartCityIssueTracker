@@ -76,14 +76,14 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-soft">
-      <div className="bg-gradient-teal text-cream p-6 flex items-center gap-4 shadow-teal">
-        <button onClick={() => navigate('/home')} className="p-3 bg-medium-teal hover:bg-teal-light rounded-full transition-all shadow-md">
+      <div className="bg-gradient-to-br from-deep-teal via-medium-teal to-teal-light text-cream p-4 sm:p-6 flex items-center gap-4 shadow-teal">
+        <button onClick={() => navigate('/home')} className="p-2 sm:p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all">
           <FiArrowLeft size={22} className="text-cream" />
         </button>
-        <h1 className="text-2xl font-bold">{tr.title}</h1>
+        <h1 className="text-xl sm:text-2xl font-bold">{tr.title}</h1>
       </div>
 
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 max-w-2xl mx-auto space-y-6">
         <div className="bg-cream p-6 rounded-2xl shadow-soft border border-pale-green">
           <div className="flex items-center justify-between mb-6">
             <div className="w-24 h-24 bg-gradient-teal rounded-full flex items-center justify-center shadow-md">

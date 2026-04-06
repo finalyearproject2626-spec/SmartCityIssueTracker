@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../utils/api'
 import { FiArrowLeft, FiClock, FiCheckCircle, FiLoader, FiMapPin } from 'react-icons/fi'
+import ImageViewer from '../../components/ImageViewer'
+import { complaintCategoryLabel, complaintStatusLabel } from '../../utils/complaintLabels'
 
 const ComplaintDetails = () => {
   const navigate = useNavigate()
@@ -66,7 +68,8 @@ const ComplaintDetails = () => {
       noRemarks: 'No remarks yet',
       noProof: 'No resolution proof yet',
       giveFeedback: 'Give Feedback',
-      images: 'Images'
+      images: 'Images',
+      notFound: 'Complaint not found'
     },
     tamil: {
       complaintDetails: 'புகார் விவரங்கள்',
@@ -81,7 +84,8 @@ const ComplaintDetails = () => {
       noRemarks: 'இன்னும் கருத்துகள் இல்லை',
       noProof: 'இன்னும் தீர்வு ஆதாரம் இல்லை',
       giveFeedback: 'கருத்து தெரிவிக்கவும்',
-      images: 'படங்கள்'
+      images: 'படங்கள்',
+      notFound: 'புகார் கிடைக்கவில்லை'
     }
   }
 
@@ -89,8 +93,8 @@ const ComplaintDetails = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-12 h-12 border-4 border-medium-teal border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -98,21 +102,21 @@ const ComplaintDetails = () => {
   if (!complaint) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p>Complaint not found</p>
+        <p className="text-deep-teal font-semibold">{tr.notFound}</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-soft">
-      <div className="bg-gradient-teal text-cream p-6 flex items-center gap-4 shadow-teal">
-        <button onClick={() => navigate('/my-complaints')} className="p-3 bg-medium-teal hover:bg-teal-light rounded-full transition-all shadow-md">
+    <div className="min-h-screen bg-gradient-soft pb-8">
+      <div className="bg-gradient-to-br from-deep-teal via-medium-teal to-teal-light text-cream p-4 sm:p-6 flex items-center gap-4 shadow-teal">
+        <button onClick={() => navigate('/my-complaints')} className="p-2 sm:p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all">
           <FiArrowLeft size={22} className="text-cream" />
         </button>
-        <h1 className="text-2xl font-bold">{tr.complaintDetails}</h1>
+        <h1 className="text-xl sm:text-2xl font-bold">{tr.complaintDetails}</h1>
       </div>
 
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 max-w-2xl mx-auto space-y-6">
         <div className="bg-cream p-6 rounded-2xl shadow-soft border border-pale-green">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -125,7 +129,7 @@ const ComplaintDetails = () => {
           <div className="space-y-4">
             <div>
               <p className="text-sm text-medium-teal font-semibold mb-1">{tr.category}</p>
-              <p className="font-semibold text-deep-teal">{complaint.category}</p>
+              <p className="font-semibold text-deep-teal">{complaintCategoryLabel(language, complaint.category)}</p>
             </div>
 
             <div>
@@ -141,7 +145,7 @@ const ComplaintDetails = () => {
                 complaint.status === 'Rejected' ? 'bg-red-500 text-cream' :
                 'bg-yellow-400 text-cream'
               }`}>
-                {complaint.status}
+                {complaintStatusLabel(language, complaint.status)}
               </span>
             </div>
 
@@ -162,21 +166,7 @@ const ComplaintDetails = () => {
           </div>
         </div>
 
-        {complaint.images && complaint.images.length > 0 && (
-          <div className="bg-cream p-6 rounded-2xl shadow-soft border border-pale-green">
-            <p className="font-bold text-xl mb-4 text-deep-teal">{tr.images}</p>
-            <div className="grid grid-cols-2 gap-2">
-              {complaint.images.map((img, idx) => (
-                <img
-                  key={idx}
-                  src={img.startsWith('http') ? img : `http://localhost:5001/uploads/${img}`}
-                  alt={`Complaint ${idx + 1}`}
-                  className="w-full h-32 object-cover rounded"
-                />
-              ))}
-            </div>
-          </div>
-        )}
+        <ImageViewer images={complaint.images || []} title={tr.images} altPrefix="Complaint" />
 
         {complaint.officerRemarks && (
           <div className="bg-cream p-6 rounded-2xl shadow-soft border border-pale-green">
@@ -186,25 +176,13 @@ const ComplaintDetails = () => {
         )}
 
         {complaint.resolutionProof && complaint.resolutionProof.length > 0 && (
-          <div className="bg-cream p-6 rounded-2xl shadow-soft border border-pale-green">
-            <p className="font-bold text-xl mb-4 text-deep-teal">{tr.resolutionProof}</p>
-            <div className="grid grid-cols-2 gap-2">
-              {complaint.resolutionProof.map((proof, idx) => (
-                <img
-                  key={idx}
-                  src={proof.startsWith('http') ? proof : `http://localhost:5001/uploads/${proof}`}
-                  alt={`Proof ${idx + 1}`}
-                  className="w-full h-32 object-cover rounded"
-                />
-              ))}
-            </div>
-          </div>
+          <ImageViewer images={complaint.resolutionProof} title={tr.resolutionProof} altPrefix="Proof" />
         )}
 
         {complaint.status === 'Resolved' && !complaint.feedback && (
           <button
             onClick={() => navigate(`/feedback/${id}`)}
-            className="w-full bg-gradient-primary text-cream py-5 rounded-2xl font-bold text-lg hover:shadow-teal transform hover:scale-105 transition-all shadow-md"
+            className="w-full bg-gradient-primary text-cream py-4 sm:py-5 rounded-2xl font-bold text-lg hover:shadow-teal transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-md"
           >
             {tr.giveFeedback}
           </button>
