@@ -265,4 +265,44 @@ router.post('/forgot-password', async (req, res) => {
   }
 });
 
+// Reset Password – validates token and updates password
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) {
+      return res.status(400).json({ message: 'Token and new password are required.' });
+    }
+    if (String(password).length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+    }
+
+    let payload;
+    try {
+      payload = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+    } catch (err) {
+      return res.status(400).json({ message: 'Invalid or expired reset link.' });
+    }
+
+    if (!payload || payload.purpose !== 'password-reset' || !payload.userId) {
+      return res.status(400).json({ message: 'Invalid reset token.' });
+    }
+
+    const user = await User.findById(payload.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+    if (!user.password) {
+      return res.status(400).json({ message: 'This account uses mobile OTP. Password reset is not available.' });
+    }
+
+    user.password = password;
+    await user.save();
+
+    res.json({ message: 'Password reset successful. Please login with your new password.' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = router;

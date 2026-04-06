@@ -9,6 +9,8 @@ import Footer from './components/Footer'
 import LandingPage from './pages/user/LandingPage'
 import SplashScreen from './pages/user/SplashScreen'
 import Login from './pages/user/Login'
+import ForgotPassword from './pages/user/ForgotPassword'
+import ResetPassword from './pages/user/ResetPassword'
 import Home from './pages/user/Home'
 import RaiseComplaint from './pages/user/RaiseComplaint'
 import ComplaintConfirmation from './pages/user/ComplaintConfirmation'
@@ -36,6 +38,8 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/splash" element={<SplashScreen />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/home" element={<PrivateRoute><Home /></PrivateRoute>} />
           <Route path="/raise-complaint" element={<PrivateRoute><RaiseComplaint /></PrivateRoute>} />
           <Route path="/complaint-confirmation/:id" element={<PrivateRoute><ComplaintConfirmation /></PrivateRoute>} />

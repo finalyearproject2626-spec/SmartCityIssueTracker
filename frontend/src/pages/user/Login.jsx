@@ -28,6 +28,7 @@ const Login = () => {
     email: isTamil ? 'மின்னஞ்சல்' : 'Email',
     password: isTamil ? 'கடவுச்சொல்' : 'Password',
     loading: isTamil ? 'ஏற்றுகிறது...' : 'Loading...',
+    forgotPassword: isTamil ? 'கடவுச்சொல்லை மறந்துவிட்டீர்களா?' : 'Forgot password?',
     alreadyAccount: isTamil ? 'ஏற்கனவே கணக்கு உள்ளதா? உள்நுழை' : 'Already have an account? Login',
     noAccount: isTamil ? 'கணக்கு இல்லையா? பதிவு செய்யவும்' : "Don't have an account? Register"
   }
@@ -138,6 +139,13 @@ const Login = () => {
           >
             {loading ? tr.loading : isRegister ? tr.register : tr.login}
           </button>
+          {!isRegister && (
+            <div className="text-right">
+              <Link to="/forgot-password" className="text-medium-teal hover:text-deep-teal font-semibold text-sm transition">
+                {tr.forgotPassword}
+              </Link>
+            </div>
+          )}
           <div className="text-center">
             <button
               type="button"
